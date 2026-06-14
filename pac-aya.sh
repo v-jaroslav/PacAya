@@ -1,57 +1,65 @@
+_pacman() {
+  /usr/bin/pacman "$@"
+}
+
+_spacman() {
+  sudo /usr/bin/pacman "$@"
+}
+
 pac() {
   case "$1" in
   install)
     shift
-    sudo /usr/bin/pacman -S "$@"
+    _spacman -S "$@"
     ;;
   remove)
     shift
-    sudo /usr/bin/pacman -Rcns "$@"
+    _spacman -Rcns "$@"
     ;;
   remove-orphans)
-    if [ -n "$(/usr/bin/pacman -Qdtq)" ]; then
-      /usr/bin/pacman -Qdtq | xargs sudo /usr/bin/pacman -Rcns
+    if [ -n "$(_pacman -Qdtq)" ]; then
+      _pacman -Qdtq | xargs _spacman -Rcns
     else
       echo "No orphan packages to remove."
     fi
     ;;
   update)
-    sudo /usr/bin/pacman -Syu
+    _spacman -Syu
     ;;
   search)
     shift
-    /usr/bin/pacman -Ss "$@"
+    _pacman -Ss "$@"
     ;;
   remote-info)
     shift
-    /usr/bin/pacman -Si "$@"
+    _pacman -Si "$@"
     ;;
   local-info)
     shift
-    /usr/bin/pacman -Qi "$@"
+    _pacman -Qi "$@"
     ;;
   list-all)
-    /usr/bin/pacman -Q
+    _pacman -Q
     ;;
   list-explicit)
-    /usr/bin/pacman -Qe
+    _pacman -Qe
     ;;
   list-orphans)
-    /usr/bin/pacman -Qdt
+    _pacman -Qdt
     ;;
   owns)
     shift
-    /usr/bin/pacman -Qo "$@"
+    _pacman -Qo "$@"
     ;;
   files)
     shift
-    /usr/bin/pacman -Ql "$@"
+    _pacman -Ql "$@"
     ;;
   clean)
-    sudo /usr/bin/pacman -Sc
+    _spacman -Sc
     ;;
   clean-all)
-    sudo /usr/bin/pacman -Scc
+    _spacman -Scc
     ;;
   help | *)
     echo "pac install <pkg>      → sudo pacman -S                       Install a package"
@@ -78,6 +86,10 @@ pac() {
 
 _AYA_DIR="$HOME/.aya"
 _AYA_CACHE="$_AYA_DIR/maintainers"
+
+_yay() {
+  /usr/bin/yay "$@"
+}
 
 _aya_warn() { echo -e "\e[33m$*\e[0m"; }
 _aya_error() { echo -e "\e[31m$*\e[0m"; }
@@ -139,7 +151,7 @@ _aya_install() {
     return 1
   fi
 
-  /usr/bin/yay -S "${safe[@]}" || return $?
+  _yay -S "${safe[@]}" || return $?
 
   local i
   for ((i = 0; i < ${#safe[@]}; i++)); do
@@ -149,7 +161,7 @@ _aya_install() {
 
 _aya_remove() {
   local pkg
-  /usr/bin/yay -Rcns "$@" || return $?
+  _yay -Rcns "$@" || return $?
   for pkg in "$@"; do
     _aya_cache_remove "$pkg"
   done
@@ -180,7 +192,7 @@ _aya_update() {
       safe+=("$pkg")
       maintainers+=("$remote_maintainer")
     fi
-  done < <(/usr/bin/yay -Qmq)
+  done < <(_yay -Qmq)
 
   if [[ ${#suspicious[@]} -gt 0 ]]; then
     _aya_error "Warning. The following AUR packages may have been compromised. The update is halted!"
@@ -194,7 +206,7 @@ _aya_update() {
   fi
 
   echo "==> All AUR packages look okay. Proceeding with update..."
-  /usr/bin/yay -Syu || return $?
+  _yay -Syu || return $?
 
   local i
   for ((i = 0; i < ${#safe[@]}; i++)); do
@@ -206,14 +218,14 @@ _aya_update() {
 
 _aya_remove_orphans() {
   local orphans
-  orphans=$(/usr/bin/yay -Qdtq)
+  orphans=$(_yay -Qdtq)
 
   if [[ -z "$orphans" ]]; then
     echo "No orphan packages to remove."
     return 0
   fi
 
-  /usr/bin/yay -Rcns $orphans || return $?
+  _yay -Rcns $orphans || return $?
 
   local pkg
   while IFS= read -r pkg; do
@@ -260,7 +272,7 @@ aya() {
     ;;
   get-pkgbuild)
     shift
-    /usr/bin/yay -G "$@"
+    _yay -G "$@"
     ;;
   install-from-pkgbuild)
     makepkg -si
@@ -270,41 +282,41 @@ aya() {
     ;;
   search)
     shift
-    /usr/bin/yay -Ss "$@"
+    _yay -Ss "$@"
     ;;
   remote-info)
     shift
-    /usr/bin/yay -Si "$@"
+    _yay -Si "$@"
     ;;
   local-info)
     shift
-    /usr/bin/yay -Qi "$@"
+    _yay -Qi "$@"
     ;;
   list-all)
-    /usr/bin/yay -Q
+    _yay -Q
     ;;
   list-aur)
-    /usr/bin/yay -Qm
+    _yay -Qm
     ;;
   list-explicit)
-    /usr/bin/yay -Qe
+    _yay -Qe
     ;;
   list-orphans)
-    /usr/bin/yay -Qdt
+    _yay -Qdt
     ;;
   owns)
     shift
-    /usr/bin/yay -Qo "$@"
+    _yay -Qo "$@"
     ;;
   files)
     shift
-    /usr/bin/yay -Ql "$@"
+    _yay -Ql "$@"
     ;;
   clean)
-    /usr/bin/yay -Sc
+    _yay -Sc
     ;;
   clean-all)
-    /usr/bin/yay -Scc
+    _yay -Scc
     ;;
   help | *)
     _aya_help
