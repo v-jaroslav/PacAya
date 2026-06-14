@@ -102,6 +102,10 @@ _aya_get_remote_maintainer() {
   yay -Si "$1" 2>/dev/null | awk -F': ' '/^Maintainer/ { print $2 }' | xargs
 }
 
+_aya_is_out_of_date() {
+  yay -Si "$1" 2>/dev/null | awk -F': ' '/^Out-of-date/ { print $2 }' | grep -qv '^No$'
+}
+
 _aya_get_cached_maintainer() {
   [[ -f "$_AYA_CACHE" ]] && awk -F'|' -v pkg="$1" '$1 == pkg { print $2; exit }' "$_AYA_CACHE" 2>/dev/null
 }
@@ -125,7 +129,7 @@ _aya_cache_remove() {
 
 _aya_install() {
   local pkg maintainer
-  local -a safe=() risky=() maintainers=()
+  local -a safe=() risky_orphaned=() risky_outdated=() maintainers=()
 
   for pkg in "$@"; do
     if _aya_is_from_official_repo $pkg; then
@@ -134,16 +138,28 @@ _aya_install() {
 
     maintainer=$(_aya_get_remote_maintainer "$pkg")
     if [[ -z "$maintainer" || "$maintainer" == "None" ]]; then
-      risky+=("$pkg")
+      risky_orphaned+=("$pkg")
+    elif _aya_is_out_of_date "$pkg"; then
+      risky_outdated+=("$pkg")
     else
       safe+=("$pkg")
       maintainers+=("$maintainer")
     fi
   done
 
-  if [[ ${#risky[@]} -gt 0 ]]; then
-    _aya_error "Install halted. The following packages are orphaned (they don't have maintainer):"
-    for pkg in "${risky[@]}"; do
+  if [[ ${#risky_orphaned[@]} -gt 0 ]]; then
+    _aya_error "Install halted. The following packages are orphaned (don't have maintainer):"
+    for pkg in "${risky_orphaned[@]}"; do
+      _aya_error "  • $pkg"
+    done
+    echo ""
+    echo "  To install them anyway (NOT recommended): run 'yay -S <pkgname>' directly."
+    return 1
+  fi
+
+  if [[ ${#risky_outdated[@]} -gt 0 ]]; then
+    _aya_error "Install halted. The following packages are out of date:"
+    for pkg in "${risky_outdated[@]}"; do
       _aya_error "  • $pkg"
     done
     echo ""
@@ -171,7 +187,8 @@ _aya_update() {
   echo "==> Checking AUR packages for maintainer changes or orphaning..."
 
   local pkg remote_maintainer cached_maintainer reason
-  local -a safe=() suspicious=() maintainers=()
+  local -a safe=() maintainers=()
+  local -a suspicious_packages=() suspicious_reasons=()
 
   while IFS= read -r pkg; do
     remote_maintainer=$(_aya_get_remote_maintainer "$pkg")
@@ -179,6 +196,8 @@ _aya_update() {
 
     if [[ -z "$remote_maintainer" || "$remote_maintainer" == "None" ]]; then
       reason="orphaned (no maintainer)"
+    elif _aya_is_out_of_date "$pkg"; then
+      reason="flagged as out-of-date"
     else
       cached_maintainer=$(_aya_get_cached_maintainer "$pkg")
       if [[ -n "$cached_maintainer" && "$cached_maintainer" != "$remote_maintainer" ]]; then
@@ -187,18 +206,19 @@ _aya_update() {
     fi
 
     if [[ -n "$reason" ]]; then
-      suspicious+=("$pkg|$reason")
+      suspicious_packages+=("$pkg")
+      suspicious_reasons+=("$reason")
     else
       safe+=("$pkg")
       maintainers+=("$remote_maintainer")
     fi
   done < <(_yay -Qmq)
 
-  if [[ ${#suspicious[@]} -gt 0 ]]; then
+  if [[ ${#suspicious_packages[@]} -gt 0 ]]; then
     _aya_error "Warning. The following AUR packages may have been compromised. The update is halted!"
-    local entry
-    for entry in "${suspicious[@]}"; do
-      _aya_error "  • ${entry%%|*} - ${entry##*|}"
+    local i
+    for ((i = 0; i < ${#suspicious_packages[@]}; i++)); do
+      _aya_error "  • ${suspicious_packages[i]} - ${suspicious_reasons[i]}"
     done
     echo ""
     echo "  To update things anyway (NOT recommended): run 'yay -Syu' directly."
