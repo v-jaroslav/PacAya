@@ -15,6 +15,10 @@ And when you do install a legitimate new AUR package, its maintainer is remember
 Then the next time you try to update AUR packages, in case there is a new maintainer, or in case the package got orphaned, the update process will be halted!
 Now you might wonder, what about AUR packages that you installed before using this script? Well, their maintainers will be saved in `~/.aya/maintainers` on the next update you perform with this script!
 
+However, it is actually important to note that this is not the only attack vector through which AUR packages can be hijacked. 
+AUR packages that are marked as out of date for more than 180 days can too be hijacked in similar way. 
+This script will halt the installation/update process if you are trying to install/update package that is marked as out of date for any number of days period!
+
 > [!WARNING]
 > It is not guaranteed that this script will 100% protect you, as always even with this simple tool do use common sense, and check before you download and install anything if it is safe, read reviews, etc.
 
