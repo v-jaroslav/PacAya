@@ -153,7 +153,7 @@ _aya_install() {
       _aya_error "  • $pkg"
     done
     echo ""
-    echo "  To install them anyway (NOT recommended): run 'yay -S <pkgname>' directly."
+    echo "  To install package(s) anyway (NOT recommended): run 'yay -S <pkgname>' directly."
     return 1
   fi
 
@@ -163,7 +163,7 @@ _aya_install() {
       _aya_error "  • $pkg"
     done
     echo ""
-    echo "  To install them anyway (NOT recommended): run 'yay -S <pkgname>' directly."
+    echo "  To install package(s) anyway (NOT recommended): run 'yay -S <pkgname>' directly."
     return 1
   fi
 
@@ -221,7 +221,7 @@ _aya_update() {
       _aya_error "  • ${suspicious_packages[i]} - ${suspicious_reasons[i]}"
     done
     echo ""
-    echo "  To update things anyway (NOT recommended): run 'yay -Syu' directly."
+    echo "  To update package(s) anyway (NOT recommended): run 'yay -Syu' directly."
     return 1
   fi
 
