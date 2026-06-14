@@ -12,7 +12,7 @@ When that happens, when you blindly run `yay -Syu` command to update all of your
 This script fixes this problem, by simply halting the installation process of AUR packages that don't have maintainer and that are orphaned. 
 And when you do install a legitimate new AUR package, its maintainer is remembered in `~/.aya/maintainers`.
 
-Then the next tiem you try to update AUR packages, in case there is a new maintainer, or in case the package got orphaned, the update process will be halted!
+Then the next time you try to update AUR packages, in case there is a new maintainer, or in case the package got orphaned, the update process will be halted!
 Now you might wonder, what about AUR packages that you installed before using this script? Well, their maintainers will be saved in `~/.aya/maintainers` on the next update you perform with this script!
 
 > [!WARNING]
@@ -20,8 +20,8 @@ Now you might wonder, what about AUR packages that you installed before using th
 
 # Installation
 
-To install this scrpit, download it from [here](https://raw.githubusercontent.com/v-jaroslav/PacAya/refs/heads/main/pac_aya.sh), and save it to your home directory.
-After that add the following to your `.bashrc` or `.zshrc` (depending on what you use): `[ -f $HOME/pac_aya.sh ] && source $HOME/pac_aya.sh`.
+To install this scrpit, download it from [here](https://raw.githubusercontent.com/v-jaroslav/PacAya/refs/heads/main/pac-aya.sh), and save it to your home directory.
+After that add the following to your `.bashrc` or `.zshrc` (depending on what you use): `[ -f $HOME/pac-aya.sh ] && source $HOME/pac-aya.sh`.
 After that, you are ready to use it!
 
 # Usage
