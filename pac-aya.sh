@@ -10,7 +10,7 @@ pac() {
   case "$1" in
   install)
     shift
-    _spacman -S "$@"
+    _spacman -S --disable-download-timeout "$@"
     ;;
   remove)
     shift
@@ -24,7 +24,7 @@ pac() {
     fi
     ;;
   update)
-    _spacman -Syu
+    _spacman -Syu --disable-download-timeout
     ;;
   search)
     shift
@@ -167,7 +167,7 @@ _aya_install() {
     return 1
   fi
 
-  _yay -S "${safe[@]}" || return $?
+  _yay -S --disable-download-timeout "${safe[@]}" || return $?
 
   local i
   for ((i = 0; i < ${#safe[@]}; i++)); do
@@ -226,7 +226,7 @@ _aya_update() {
   fi
 
   echo "==> All AUR packages look okay. Proceeding with update..."
-  _yay -Syu || return $?
+  _yay -Syu --disable-download-timeout || return $?
 
   local i
   for ((i = 0; i < ${#safe[@]}; i++)); do
